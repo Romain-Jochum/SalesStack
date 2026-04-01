@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+node_modules/
+.mcp/
+.claude/
+*.log
+volumes/
+mcp-logs.txt
+wa-logs.txt
+prd-setup.md
