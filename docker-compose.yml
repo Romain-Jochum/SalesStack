@@ -58,7 +58,7 @@ services:
     networks:
       - salesstack
     ports:
-      - "127.0.0.1:${TWENTY_DB_PORT:-2354}:5432"
+      - "0.0.0.0:${TWENTY_DB_PORT:-2354}:5432"
     environment:
       POSTGRES_DB: ${TWENTY_PG_DB}
       POSTGRES_USER: ${TWENTY_PG_USER}
@@ -80,7 +80,7 @@ services:
     networks:
       - salesstack
     ports:
-      - "127.0.0.1:${TWENTY_REDIS_PORT:-2357}:6379"
+      - "0.0.0.0:${TWENTY_REDIS_PORT:-2357}:6379"
     volumes:
       - twenty-redis-data:/data
     healthcheck:
@@ -96,7 +96,7 @@ services:
     networks:
       - salesstack
     ports:
-      - "127.0.0.1:${MAUTIC_DB_PORT:-2355}:3306"
+      - "0.0.0.0:${MAUTIC_DB_PORT:-2355}:3306"
     environment:
       MYSQL_DATABASE: ${MAUTIC_DB_NAME}
       MYSQL_USER: ${MAUTIC_DB_USER}
@@ -118,7 +118,7 @@ services:
     networks:
       - salesstack
     ports:
-      - "127.0.0.1:${N8N_DB_PORT:-2356}:5432"
+      - "0.0.0.0:${N8N_DB_PORT:-2356}:5432"
     environment:
       POSTGRES_DB: ${N8N_PG_DB}
       POSTGRES_USER: ${N8N_PG_USER}
@@ -144,7 +144,7 @@ services:
     networks:
       - salesstack
     ports:
-      - "127.0.0.1:${TWENTY_PORT:-2350}:3000"
+      - "0.0.0.0:${TWENTY_PORT:-2350}:3000"
     environment:
       PG_DATABASE_URL: postgres://${TWENTY_PG_USER}:${TWENTY_PG_PASSWORD}@twenty-db:5432/${TWENTY_PG_DB}
       REDIS_URL: redis://twenty-redis:6379
@@ -171,7 +171,7 @@ services:
     networks:
       - salesstack
     ports:
-      - "127.0.0.1:${MAUTIC_PORT:-2351}:80"
+      - "0.0.0.0:${MAUTIC_PORT:-2351}:80"
     environment:
       DOCKER_MAUTIC_ROLE: mautic_web
       MAUTIC_DB_HOST: mautic-db
@@ -199,7 +199,7 @@ services:
     networks:
       - salesstack
     ports:
-      - "127.0.0.1:${WAHA_PORT:-2352}:3000"
+      - "0.0.0.0:${WAHA_PORT:-2352}:3000"
     environment:
       WAHA_API_KEY: ${WAHA_API_KEY}
       WAHA_DASHBOARD_USERNAME: ${WAHA_DASHBOARD_USERNAME}
@@ -221,7 +221,7 @@ services:
     networks:
       - salesstack
     ports:
-      - "127.0.0.1:${N8N_PORT:-2353}:5678"
+      - "0.0.0.0:${N8N_PORT:-2353}:5678"
     environment:
       DB_TYPE: postgresdb
       DB_POSTGRESDB_HOST: n8n-db
