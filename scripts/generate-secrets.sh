@@ -10,11 +10,13 @@ fi
 echo "Generating secrets..."
 
 # Generate secrets
+# URL-safe hex for passwords embedded in database connection URLs
+TWENTY_PG_PASSWORD=$(openssl rand -hex 24)
+MAUTIC_DB_PASSWORD=$(openssl rand -hex 24)
+N8N_PG_PASSWORD=$(openssl rand -hex 24)
+# base64 for standalone env vars (not embedded in URLs)
 TWENTY_APP_SECRET=$(openssl rand -base64 32)
-TWENTY_PG_PASSWORD=$(openssl rand -base64 32)
-MAUTIC_DB_PASSWORD=$(openssl rand -base64 32)
 N8N_ENCRYPTION_KEY=$(openssl rand -base64 32)
-N8N_PG_PASSWORD=$(openssl rand -base64 32)
 WAHA_API_KEY=$(openssl rand -base64 32)
 WAHA_DASHBOARD_PASSWORD=$(openssl rand -base64 32)
 
@@ -43,7 +45,7 @@ MAUTIC_SITE_URL=http://localhost:2351
 MAUTIC_DB_NAME=mautic
 MAUTIC_DB_USER=mautic
 MAUTIC_DB_PASSWORD=${MAUTIC_DB_PASSWORD}
-MAUTIC_DB_ROOT_PASSWORD=$(openssl rand -base64 32)
+MAUTIC_DB_ROOT_PASSWORD=$(openssl rand -hex 24)
 
 # -----------------------------------------------------------------------------
 # WAHA (WhatsApp)
