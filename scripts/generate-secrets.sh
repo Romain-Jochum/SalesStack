@@ -13,6 +13,7 @@ echo "Generating secrets..."
 # URL-safe hex for passwords embedded in database connection URLs
 TWENTY_PG_PASSWORD=$(openssl rand -hex 24)
 MAUTIC_DB_PASSWORD=$(openssl rand -hex 24)
+MAUTIC_DB_ROOT_PASSWORD=$(openssl rand -hex 24)
 N8N_PG_PASSWORD=$(openssl rand -hex 24)
 # base64 for standalone env vars (not embedded in URLs)
 TWENTY_APP_SECRET=$(openssl rand -base64 32)
@@ -26,11 +27,16 @@ cat > .env << EOF
 # Generated on $(date -u +"%Y-%m-%dT%H:%M:%SZ")
 # =============================================================================
 
+# !! PRODUCTION: Change these from localhost to your real domains !!
+TWENTY_SERVER_URL=http://localhost:2350
+MAUTIC_SITE_URL=http://localhost:2351
+WAHA_BASE_URL=http://localhost:2352
+N8N_WEBHOOK_URL=http://localhost:2353/
+
 # -----------------------------------------------------------------------------
 # Twenty CRM
 # -----------------------------------------------------------------------------
 TWENTY_IMAGE=twentycrm/twenty:v1.20.0
-TWENTY_SERVER_URL=http://localhost:2350
 TWENTY_APP_SECRET=${TWENTY_APP_SECRET}
 TWENTY_PG_DB=twenty
 TWENTY_PG_USER=twenty
@@ -41,11 +47,10 @@ TWENTY_SIGN_IN_PREFILLED=true
 # Mautic
 # -----------------------------------------------------------------------------
 MAUTIC_IMAGE=mautic/mautic:7-apache
-MAUTIC_SITE_URL=http://localhost:2351
 MAUTIC_DB_NAME=mautic
 MAUTIC_DB_USER=mautic
 MAUTIC_DB_PASSWORD=${MAUTIC_DB_PASSWORD}
-MAUTIC_DB_ROOT_PASSWORD=$(openssl rand -hex 24)
+MAUTIC_DB_ROOT_PASSWORD=${MAUTIC_DB_ROOT_PASSWORD}
 
 # -----------------------------------------------------------------------------
 # WAHA (WhatsApp)
@@ -54,13 +59,11 @@ WAHA_IMAGE=devlikeapro/waha:latest
 WAHA_API_KEY=${WAHA_API_KEY}
 WAHA_DASHBOARD_USERNAME=admin
 WAHA_DASHBOARD_PASSWORD=${WAHA_DASHBOARD_PASSWORD}
-WAHA_BASE_URL=http://localhost:2352
 
 # -----------------------------------------------------------------------------
 # n8n
 # -----------------------------------------------------------------------------
 N8N_IMAGE=docker.n8n.io/n8nio/n8n:2.12.3
-N8N_WEBHOOK_URL=http://localhost:2353/
 N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
 N8N_PG_DB=n8n
 N8N_PG_USER=n8n
@@ -68,7 +71,7 @@ N8N_PG_PASSWORD=${N8N_PG_PASSWORD}
 N8N_TIMEZONE=Indian/Mauritius
 
 # -----------------------------------------------------------------------------
-# Ports (all bound to 127.0.0.1)
+# Ports
 # -----------------------------------------------------------------------------
 TWENTY_PORT=2350
 MAUTIC_PORT=2351
@@ -89,11 +92,16 @@ cat > .env.example << 'EOF'
 # Copy to .env and fill in values, or run: ./scripts/generate-secrets.sh
 # =============================================================================
 
+# !! PRODUCTION: Change these from localhost to your real domains !!
+TWENTY_SERVER_URL=http://localhost:2350
+MAUTIC_SITE_URL=http://localhost:2351
+WAHA_BASE_URL=http://localhost:2352
+N8N_WEBHOOK_URL=http://localhost:2353/
+
 # -----------------------------------------------------------------------------
 # Twenty CRM
 # -----------------------------------------------------------------------------
 TWENTY_IMAGE=twentycrm/twenty:v1.20.0
-TWENTY_SERVER_URL=http://localhost:2350
 TWENTY_APP_SECRET=CHANGE_ME
 TWENTY_PG_DB=twenty
 TWENTY_PG_USER=twenty
@@ -104,7 +112,6 @@ TWENTY_SIGN_IN_PREFILLED=true
 # Mautic
 # -----------------------------------------------------------------------------
 MAUTIC_IMAGE=mautic/mautic:7-apache
-MAUTIC_SITE_URL=http://localhost:2351
 MAUTIC_DB_NAME=mautic
 MAUTIC_DB_USER=mautic
 MAUTIC_DB_PASSWORD=CHANGE_ME
@@ -122,7 +129,6 @@ WAHA_DASHBOARD_PASSWORD=CHANGE_ME
 # n8n
 # -----------------------------------------------------------------------------
 N8N_IMAGE=docker.n8n.io/n8nio/n8n:2.12.3
-N8N_WEBHOOK_URL=http://localhost:2353/
 N8N_ENCRYPTION_KEY=CHANGE_ME
 N8N_PG_DB=n8n
 N8N_PG_USER=n8n
@@ -130,7 +136,7 @@ N8N_PG_PASSWORD=CHANGE_ME
 N8N_TIMEZONE=Indian/Mauritius
 
 # -----------------------------------------------------------------------------
-# Ports (all bound to 127.0.0.1)
+# Ports
 # -----------------------------------------------------------------------------
 TWENTY_PORT=2350
 MAUTIC_PORT=2351

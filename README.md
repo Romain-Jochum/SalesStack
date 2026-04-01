@@ -16,6 +16,8 @@ Self-hosted sales outreach stack running on Docker Compose. Four tools, one netw
 ./scripts/generate-secrets.sh
 
 # 2. Start the stack (11 containers)
+# The salesstack-twenty-server container 
+# can take some time to start up
 ./scripts/start.sh
 
 # 3. Wait for healthy + print credentials

@@ -41,6 +41,7 @@ Update these values in `.env`:
 # Change localhost URLs to your real domains
 TWENTY_SERVER_URL=https://crm.example.com
 MAUTIC_SITE_URL=https://mautic.example.com
+WAHA_BASE_URL=https://wa.example.com
 N8N_WEBHOOK_URL=https://n8n.example.com/
 
 # Disable prefilled sign-in for production

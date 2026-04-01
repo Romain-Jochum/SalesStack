@@ -107,3 +107,22 @@ echo "       - WAHA_API_KEY is already set (see above)"
 echo "       - N8N_API_KEY from n8n Settings -> API"
 echo "       - MAUTIC credentials from Mautic API settings"
 echo ""
+
+# Check if URLs still point to localhost
+LOCALHOST_URLS=""
+for var in TWENTY_SERVER_URL MAUTIC_SITE_URL WAHA_BASE_URL N8N_WEBHOOK_URL; do
+  val=$(eval echo "\$$var")
+  if echo "$val" | grep -q "localhost"; then
+    LOCALHOST_URLS="$LOCALHOST_URLS  $var=$val\n"
+  fi
+done
+if [ -n "$LOCALHOST_URLS" ]; then
+  echo "=============================================="
+  echo "  WARNING: URLs still point to localhost"
+  echo "=============================================="
+  echo ""
+  echo "  If running behind a reverse proxy, update"
+  echo "  these in .env and restart:"
+  printf "$LOCALHOST_URLS"
+  echo ""
+fi
