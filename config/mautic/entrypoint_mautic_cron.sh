@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Custom cron entrypoint that registers crontab under root instead of www-data.
+# The default image entrypoint uses "crontab -u www-data" but www-data cannot
+# execute PHP via cron in this container due to environment/permission restrictions.
+# Since this is a dedicated cron container (not the web server), running as root is safe.
+
+# Wait for mautic to be installed before setting up cron jobs
+/startup/wait_for_mautic_install.sh
+
+mkdir -p /opt/mautic/cron
+
+if [ ! -f /opt/mautic/cron/mautic ]; then
+  cp -p /templates/mautic_cron /opt/mautic/cron/mautic
+fi
+
+# Register the crontab file for root (not www-data)
+crontab /opt/mautic/cron/mautic
+
+# if /tmp/stdout exists clear it out
+if [ ! -p /tmp/stdout ]; then
+  rm -f /tmp/stdout
+fi
+# create the fifo file to be able to redirect cron output for non-root users
+mkfifo /tmp/stdout
+chmod 777 /tmp/stdout
+
+# ensure the PHP env vars are present during cronjobs
+declare -p | grep 'PHP_INI_VALUE_' > /tmp/cron.env
+
+# run cron and print the output
+cron -f | tail -f /tmp/stdout

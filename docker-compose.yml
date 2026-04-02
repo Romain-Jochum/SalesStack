@@ -314,6 +314,7 @@ services:
       - mautic-logs:/var/www/html/var/logs
       - mautic-media-files:/var/www/html/docroot/media/files
       - mautic-media-images:/var/www/html/docroot/media/images
+      - ./config/mautic/entrypoint_mautic_cron.sh:/entrypoint_mautic_cron.sh:ro
     depends_on:
       mautic-web:
         condition: service_healthy
