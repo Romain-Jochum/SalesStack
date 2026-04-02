@@ -28,6 +28,30 @@ volumes:
       type: none
       o: bind
       device: ${PWD}/volumes/mautic-data
+  mautic-config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/volumes/mautic-config
+  mautic-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/volumes/mautic-logs
+  mautic-media-files:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/volumes/mautic-media-files
+  mautic-media-images:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/volumes/mautic-media-images
   n8n-db-data:
     driver: local
     driver_opts:
@@ -182,6 +206,10 @@ services:
       MAUTIC_SITE_URL: ${MAUTIC_SITE_URL}
     volumes:
       - mautic-data:/var/www/html
+      - mautic-config:/var/www/html/config
+      - mautic-logs:/var/www/html/var/logs
+      - mautic-media-files:/var/www/html/docroot/media/files
+      - mautic-media-images:/var/www/html/docroot/media/images
     depends_on:
       mautic-db:
         condition: service_healthy
@@ -282,6 +310,10 @@ services:
       MAUTIC_SITE_URL: ${MAUTIC_SITE_URL}
     volumes:
       - mautic-data:/var/www/html
+      - mautic-config:/var/www/html/config
+      - mautic-logs:/var/www/html/var/logs
+      - mautic-media-files:/var/www/html/docroot/media/files
+      - mautic-media-images:/var/www/html/docroot/media/images
     depends_on:
       mautic-web:
         condition: service_healthy
@@ -301,6 +333,10 @@ services:
       MAUTIC_SITE_URL: ${MAUTIC_SITE_URL}
     volumes:
       - mautic-data:/var/www/html
+      - mautic-config:/var/www/html/config
+      - mautic-logs:/var/www/html/var/logs
+      - mautic-media-files:/var/www/html/docroot/media/files
+      - mautic-media-images:/var/www/html/docroot/media/images
     depends_on:
       mautic-web:
         condition: service_healthy
