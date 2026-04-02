@@ -9,3 +9,4 @@ volumes/
 mcp-logs.txt
 wa-logs.txt
 prd-setup.md
+.tmp
