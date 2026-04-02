@@ -17,11 +17,8 @@ fi
 # Register the crontab file for root (not www-data)
 crontab /opt/mautic/cron/mautic
 
-# if /tmp/stdout exists clear it out
-if [ ! -p /tmp/stdout ]; then
-  rm -f /tmp/stdout
-fi
-# create the fifo file to be able to redirect cron output for non-root users
+# recreate the fifo for cron output
+rm -f /tmp/stdout
 mkfifo /tmp/stdout
 chmod 777 /tmp/stdout
 

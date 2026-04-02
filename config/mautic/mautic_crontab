@@ -1,0 +1,12 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+BASH_ENV=/tmp/cron.env
+
+# Segments Update - every 5 min
+*/5 * * * * php /var/www/html/bin/console mautic:segments:update 2>&1 | tee /tmp/stdout
+
+# Campaigns Update - every 5 min (offset by 1 min)
+1-56/5 * * * * php /var/www/html/bin/console mautic:campaigns:update 2>&1 | tee /tmp/stdout
+
+# Trigger Update - every 5 min (offset by 2 min)
+2-57/5 * * * * php /var/www/html/bin/console mautic:campaigns:trigger 2>&1 | tee /tmp/stdout
