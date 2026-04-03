@@ -196,6 +196,7 @@ services:
       - salesstack
     ports:
       - "0.0.0.0:${MAUTIC_PORT:-2351}:80"
+    entrypoint: /mautic-proxy-init.sh
     environment:
       DOCKER_MAUTIC_ROLE: mautic_web
       MAUTIC_DB_HOST: mautic-db
@@ -210,6 +211,8 @@ services:
       - mautic-logs:/var/www/html/var/logs
       - mautic-media-files:/var/www/html/docroot/media/files
       - mautic-media-images:/var/www/html/docroot/media/images
+      - ./config/mautic/reverse-proxy.conf:/etc/apache2/conf-enabled/reverse-proxy.conf:ro
+      - ./config/mautic/mautic-proxy-init.sh:/mautic-proxy-init.sh:ro
     depends_on:
       mautic-db:
         condition: service_healthy
