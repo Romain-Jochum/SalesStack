@@ -10,3 +10,9 @@ mcp-logs.txt
 wa-logs.txt
 prd-setup.md
 .tmp
+emails/
+docs/superpowers/
+!docs/superpowers/plans/
+!docs/superpowers/plans/**
+!docs/superpowers/specs/
+!docs/superpowers/specs/**
