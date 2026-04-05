@@ -5482,45 +5482,24 @@ git commit -m "docs: add backend/README.md with setup, testing, monitoring, and 
 
 ---
 
-## Self-Review
+## Phase 2 Scope (Research Engine)
 
-**Spec coverage check:**
-- [x] Phase 1 database foundation — covered by Tasks 1-21
-- [x] PostgreSQL 18 + pgvector — Task 17 `pgvector/pgvector:pg18`
-- [x] Fastify v5 — Task 1 `package.json`
-- [x] Prisma v7 — Task 1 `package.json`
-- [x] BullMQ v5.71+ — Task 1 `package.json` + Tasks 3, 5, 14
-- [x] Vertical slices — Task 6-13 module structure
-- [x] Contacts CRUD + bulk — Task 6
-- [x] Companies CRUD — Task 7
-- [x] Segments + filter engine — Task 8
-- [x] Campaigns + enrollment — Task 9
-- [x] Engagements + score delta — Task 10
-- [x] Webhooks (WAHA, Cal, email) with HMAC — Task 11
-- [x] Opportunities — Task 12
-- [x] Job status endpoint — Task 13
-- [x] Workers (engagement + segment) — Task 14
-- [x] Server entrypoint with auth — Task 15
-- [x] Dockerfile multi-stage Node 24 — Task 16
-- [x] Docker Compose additions — Task 17
-- [x] Prometheus + Grafana + Loki — Tasks 17-18
-- [x] Metabase with read-only user — Tasks 17-18
-- [x] db-init.sql metabase_ro — Task 18
-- [x] CI/CD GitHub Actions — Task 20
-- [x] Mautic migration strategy — documented in Task 21 (gradual migration: n8n writes to new API, bulk import Mautic contacts)
-- [x] Queue payloads are pointer-only — Tasks 11 (webhookEventId only), 6 (bulk contacts as job)
-- [x] tenant_id on all models — Task 2 Prisma schema
-- [x] Phase 2 models in schema — Task 2 Prisma schema
-- [x] TDD throughout — unit tests in Tasks 4, 5, 6, 7, 8, 9, 11
+> Full architecture: `docs/superpowers/specs/2026-04-05-phase2-phase3-architecture.md`
+> Decisions log: `docs/superpowers/decisions/`
 
-**Missing items identified and fixed:**
-- Task 10 has no unit tests. Add after routes are created — the service uses real DB calls which need integration tests. The score delta constants are unit-testable.
-- `@sinclair/typebox` added to `dependencies` in Step 1.1. ✓
-- `"crypto"` (npm stub) removed from dependencies — use Node.js built-in. ✓
-- `"zod"` removed — unused; TypeBox handles all schema validation. ✓
-- `setupFilesAfterFramework` → `setupFilesAfterEnv` in jest.config.ts. ✓
-- `tests/unit/setup.ts` stub added in Step 1.7. ✓
-- ESLint downgraded to v8 (v9 dropped `.eslintrc.json` format). ✓
-- Dockerfile runner stage: copy `prisma/` before `npm ci` so postinstall works. ✓
+Phase 1 provides the database schema, async queue pattern, and deployment foundation that Phase 2 is built on. The following Phase 2 components are pre-wired but not activated:
 
-**Type consistency:** `CreateContactInput` from `schemas.ts` is used in `service.ts` and `routes.ts` consistently. `FilterRuleGroup` exported from `filter-engine.ts` and imported in `service.ts` and `segment.worker.ts`. `QUEUE_NAMES` exported from `queues.ts` and imported in all workers. All consistent.
+**Research Jobs module** (`src/modules/research-jobs/`) — Creates and manages `ResearchJob` records. Dispatches BullMQ FlowProducer pipelines: one parent job per research target, three child workers (scrape → parse → enrich). Activated with `--profile phase2` docker-compose flag.
+
+**Sources module** (`src/modules/sources/`) — Manages `ResearchSource` records and MinIO object storage (raw HTML, parsed text, LLM outputs). Content stored by pointer (`contentKey`/`contentBucket`) — never inline in Postgres. MinIO service already defined in docker-compose under `phase2` profile.
+
+**Data Lineage module** (`src/modules/lineage/`) — Every field written to a contact/company during enrichment is recorded in `DataLineage`: which field changed, from which source, by which LLM model, with what confidence score. Queryable via API: "why does this contact have jobTitle = CTO?" → trace to ResearchSource → trace to scraped URL.
+
+**Entity Relationships module** (`src/modules/entities/`) — Maps relationships between entities (contact → company, company → competitor, contact → decision-maker). Used in Phase 3 for org-chart navigation and account-based outreach targeting.
+
+**Phase 1 foundations that enable Phase 2:**
+- `tenantId` on all models → multi-tenant research from day one
+- Async queue pattern proven in Phase 1 (webhooks use identical pipeline)
+- Pointer pattern (job ID, not payload) → carries directly into research job dispatch
+- Prisma schema already includes all 5 Phase 2 models; migration runs in Phase 1
+- `QUEUE_NAMES.RESEARCH_*` constants defined; Queue instances and FlowProducer to be instantiated in Phase 2

@@ -41,3 +41,42 @@ All services run on a shared Docker bridge network called `salesstack`.
 - n8n: n8n workflow API via n8n-mcp-server (configure N8N_API_KEY after first run)
 - n8n-docs: n8n documentation via n8n-mcp
 - openapi-bridge: Generic OpenAPI-to-MCP bridge for any tool's Swagger spec
+
+---
+
+## Sales Engine Backend (Phase 1+)
+
+Built alongside the existing stack. See `backend/` directory.
+
+### Port allocation (new services)
+- 2359: Sales Engine API (Fastify, internal 3000)
+- 2360: Sales Engine PostgreSQL (pgvector/pgvector:pg18, internal 5432)
+- 2361: Sales Engine Redis 7 (internal 6379)
+- 2362: MinIO API (Phase 2, internal 9000)
+- 2363: MinIO Console (Phase 2, internal 9001)
+- 2365: Prometheus (internal 9090)
+- 2366: Grafana (internal 3000)
+- 2367: Loki (internal 3100)
+- 2368: Metabase (internal 3000)
+
+### Phase 1 plan
+`docs/superpowers/plans/2026-04-05-sales-engine-phase1-revised.md`
+
+### Phase 2/3 architecture
+`docs/superpowers/specs/2026-04-05-phase2-phase3-architecture.md`
+
+### Architectural decisions log
+`docs/superpowers/decisions/`
+
+### Key design principles (carry into all phases)
+- Vertical slices: each module is `schemas.ts` + `service.ts` + `routes.ts`
+- Pointer pattern: BullMQ jobs carry IDs, never raw payloads
+- Exact dependency pinning: no `^` or `~` in package.json
+- Phase C verification: every task requires real-environment testing before commit
+- Tenant isolation: `tenantId` on every model, every query
+
+### MCP status for Sales Engine implementation
+- context7: Active — use for Fastify v5, Prisma v7, BullMQ v5.71+ docs
+- n8n: Active (docs + live testing for smoke test Task 21)
+- twenty-crm: Deactivated for Phase 1
+- mautic: Deactivated for Phase 1
