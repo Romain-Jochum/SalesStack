@@ -12,7 +12,8 @@ workers, PostgreSQL, Redis — orchestrated by n8n workflows.
 - **Validation:** @sinclair/typebox 0.34.49
 - **Logging:** pino 10.3.1
 - **Testing:** Jest 29.7.0, ts-jest 29.4.9, testcontainers 11.13.0
-- **Linting:** ESLint 8.57.1, Prettier 3.8.1, husky 9.1.7
+- **Linting:** ESLint 8.57.1, Prettier 3.8.1, husky 9.1.7, lint-staged 16.4.0
+- **Monitoring:** prom-client 15.1.3, @sentry/node 10.47.0
 
 ## Commands
 
@@ -88,7 +89,7 @@ sales-engine/
 
 - **ALWAYS** enter plan mode before implementing a feature
 - **ALWAYS** explore and load relevant skills before starting work
-- If a plan task: **ALWAYS** read CONTEXT.md before touching code
+- If a plan task: **ALWAYS** read the CONTEXT.md in the active plan directory before touching code
 - If no plan: **ALWAYS** explore existing patterns and files before writing anything new
 - If no relevant skill exists, ask whether to search for one
 
@@ -119,6 +120,7 @@ sales-engine/
 - **ALWAYS** use `docker compose` (v2), not `docker-compose` (v1)
 - All inter-service traffic uses Docker service names (e.g. `redis://sales-redis:6379`)
 - Exact dependency pinning — no `^` or `~` in package.json
+- SIGTERM handler: drain in-flight requests, then close DB, then close Redis/workers in order
 
 ## SECURITY
 
@@ -127,6 +129,7 @@ sales-engine/
 - **ALWAYS** validate API keys via SHA-256 hash comparison — never store raw keys
 - **ALWAYS** test every endpoint without auth and confirm it returns 401
 - Rate limiting: 500 req/min per IP — requests exceeding the limit return 429
+- Generate secrets with `openssl rand -base64 32` — never use placeholders in production
 
 ## TESTING
 
