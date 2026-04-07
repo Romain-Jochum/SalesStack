@@ -1,18 +1,18 @@
+# Environment
 .env
 .env.*
-!.env.example
+
+# Dependencies
 node_modules/
-.mcp/
+
+# Claude / MCP
 .claude/
-*.log
-volumes/
+.mcp/
+.mcp.json
 mcp-logs.txt
-wa-logs.txt
-prd-setup.md
+
+# Logs & temp
+*.log
 .tmp
+volumes/
 emails/
-docs/superpowers/
-!docs/superpowers/plans/
-!docs/superpowers/plans/**
-!docs/superpowers/specs/
-!docs/superpowers/specs/**
