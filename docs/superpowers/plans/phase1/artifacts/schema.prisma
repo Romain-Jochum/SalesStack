@@ -1,0 +1,512 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector"), pg_trgm, btree_gin]
+}
+
+// ─── PHASE 1 MODELS ──────────────────────────────────────────────────────────
+
+model Company {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenantId      String?   @map("tenant_id") @db.Uuid
+  name          String
+  domain        String?
+  website       String?
+  industry      String?
+  employeeCount Int?      @map("employee_count")
+  annualRevenue Decimal?  @map("annual_revenue") @db.Decimal(18, 2)
+  country       String?
+  city          String?
+  state         String?
+  linkedinUrl   String?   @map("linkedin_url")
+  description   String?
+  customFields  Json      @default("{}") @map("custom_fields") @db.JsonB
+  embedding     Unsupported("vector(1536)")?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  contactCompanies ContactCompany[]
+  companyTags      CompanyTag[]
+  opportunities    Opportunity[]
+  notes            Note[]
+
+  @@unique([tenantId, domain])
+  @@index([tenantId])
+  @@index([deletedAt])
+  @@index([customFields], type: Gin)
+  @@map("companies")
+}
+
+model Contact {
+  id              String    @id @default(uuid()) @db.Uuid
+  tenantId        String?   @map("tenant_id") @db.Uuid
+  firstName       String    @map("first_name")
+  lastName        String?   @map("last_name")
+  email           String?
+  emailVerified   Boolean   @default(false) @map("email_verified")
+  phone           String?
+  jobTitle        String?   @map("job_title")
+  seniority       String?
+  linkedinUrl     String?   @map("linkedin_url")
+  timezone        String?
+  country         String?
+  city            String?
+  engagementScore Int       @default(0) @map("engagement_score")
+  customFields    Json      @default("{}") @map("custom_fields") @db.JsonB
+  embedding       Unsupported("vector(1536)")?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  contactCompanies    ContactCompany[]
+  contactTags         ContactTag[]
+  segmentMemberships  ContactSegmentMembership[]
+  campaignEnrollments CampaignEnrollment[]
+  engagementEvents    EngagementEvent[]
+  opportunities       Opportunity[]
+  notes               Note[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([email])
+  @@index([deletedAt])
+  @@index([engagementScore])
+  @@index([customFields], type: Gin)
+  @@map("contacts")
+}
+
+model ContactCompany {
+  id        String    @id @default(uuid()) @db.Uuid
+  contactId String    @map("contact_id") @db.Uuid
+  companyId String    @map("company_id") @db.Uuid
+  role      String?
+  isPrimary Boolean   @default(false) @map("is_primary")
+  startDate DateTime? @map("start_date")
+  endDate   DateTime? @map("end_date")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  contact Contact @relation(fields: [contactId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([contactId, companyId])
+  @@index([contactId])
+  @@index([companyId])
+  @@map("contact_companies")
+}
+
+model Tag {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String?  @map("tenant_id") @db.Uuid
+  name      String
+  color     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  contactTags ContactTag[]
+  companyTags CompanyTag[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("tags")
+}
+
+model ContactTag {
+  contactId String   @map("contact_id") @db.Uuid
+  tagId     String   @map("tag_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  contact Contact @relation(fields: [contactId], references: [id])
+  tag     Tag     @relation(fields: [tagId], references: [id])
+
+  @@id([contactId, tagId])
+  @@map("contact_tags")
+}
+
+model CompanyTag {
+  companyId String   @map("company_id") @db.Uuid
+  tagId     String   @map("tag_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id])
+  tag     Tag     @relation(fields: [tagId], references: [id])
+
+  @@id([companyId, tagId])
+  @@map("company_tags")
+}
+
+model Segment {
+  id              String    @id @default(uuid()) @db.Uuid
+  tenantId        String?   @map("tenant_id") @db.Uuid
+  name            String
+  description     String?
+  filterRules     Json      @map("filter_rules") @db.JsonB
+  isDynamic       Boolean   @default(true) @map("is_dynamic")
+  lastEvaluatedAt DateTime? @map("last_evaluated_at")
+  memberCount     Int       @default(0) @map("member_count")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  memberships ContactSegmentMembership[]
+
+  @@index([tenantId])
+  @@index([filterRules], type: Gin)
+  @@map("segments")
+}
+
+model ContactSegmentMembership {
+  contactId String    @map("contact_id") @db.Uuid
+  segmentId String    @map("segment_id") @db.Uuid
+  addedAt   DateTime  @default(now()) @map("added_at")
+  addedBy   String    @default("system") @map("added_by")
+  removedAt DateTime? @map("removed_at")
+
+  contact Contact @relation(fields: [contactId], references: [id])
+  segment Segment @relation(fields: [segmentId], references: [id])
+
+  @@id([contactId, segmentId])
+  @@index([segmentId])
+  @@index([contactId])
+  @@map("contact_segment_memberships")
+}
+
+model Campaign {
+  id          String         @id @default(uuid()) @db.Uuid
+  tenantId    String?        @map("tenant_id") @db.Uuid
+  name        String
+  description String?
+  status      CampaignStatus @default(DRAFT)
+  type        CampaignType
+  settings    Json           @default("{}") @db.JsonB
+  startDate   DateTime?      @map("start_date")
+  endDate     DateTime?      @map("end_date")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  deletedAt   DateTime?      @map("deleted_at")
+
+  enrollments   CampaignEnrollment[]
+  opportunities Opportunity[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("campaigns")
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+enum CampaignType {
+  EMAIL_SEQUENCE
+  WHATSAPP_SEQUENCE
+  MIXED
+  LINKEDIN_SEQUENCE
+}
+
+model CampaignEnrollment {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String?   @map("tenant_id") @db.Uuid
+  contactId   String    @map("contact_id") @db.Uuid
+  campaignId  String    @map("campaign_id") @db.Uuid
+  stage       String    @default("enrolled")
+  enrolledAt  DateTime  @default(now()) @map("enrolled_at")
+  completedAt DateTime? @map("completed_at")
+  exitedAt    DateTime? @map("exited_at")
+  exitReason  String?   @map("exit_reason")
+  metadata    Json      @default("{}") @db.JsonB
+
+  contact  Contact  @relation(fields: [contactId], references: [id])
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+
+  @@unique([contactId, campaignId])
+  @@index([campaignId])
+  @@index([contactId])
+  @@index([stage])
+  @@map("campaign_enrollments")
+}
+
+model EngagementEvent {
+  id             String              @id @default(uuid()) @db.Uuid
+  tenantId       String?             @map("tenant_id") @db.Uuid
+  contactId      String              @map("contact_id") @db.Uuid
+  campaignId     String?             @map("campaign_id") @db.Uuid
+  enrollmentId   String?             @map("enrollment_id") @db.Uuid
+  eventType      EngagementEventType @map("event_type")
+  channel        String?
+  occurredAt     DateTime            @map("occurred_at")
+  metadata       Json                @default("{}") @db.JsonB
+  sourceProvider String?             @map("source_provider")
+  createdAt      DateTime            @default(now()) @map("created_at")
+
+  contact Contact @relation(fields: [contactId], references: [id])
+
+  @@index([contactId, occurredAt])
+  @@index([eventType])
+  @@index([campaignId])
+  @@index([tenantId, occurredAt])
+  @@index([metadata], type: Gin)
+  @@map("engagement_events")
+}
+
+enum EngagementEventType {
+  EMAIL_SENT
+  EMAIL_DELIVERED
+  EMAIL_OPENED
+  EMAIL_CLICKED
+  EMAIL_REPLIED
+  EMAIL_BOUNCED
+  EMAIL_UNSUBSCRIBED
+  EMAIL_SPAM
+  WHATSAPP_SENT
+  WHATSAPP_DELIVERED
+  WHATSAPP_READ
+  WHATSAPP_REPLIED
+  BOOKING_CREATED
+  BOOKING_CANCELLED
+  FORM_SUBMITTED
+  PAGE_VISITED
+  LINKEDIN_CONNECTED
+  LINKEDIN_MESSAGED
+  LINKEDIN_REPLIED
+  NOTE_ADDED
+  MANUAL
+}
+
+model Opportunity {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String?   @map("tenant_id") @db.Uuid
+  title       String
+  companyId   String?   @map("company_id") @db.Uuid
+  contactId   String?   @map("contact_id") @db.Uuid
+  campaignId  String?   @map("campaign_id") @db.Uuid
+  stage       String    @default("prospecting")
+  value       Decimal?  @db.Decimal(18, 2)
+  currency    String    @default("USD")
+  probability Int?
+  closeDate   DateTime? @map("close_date")
+  ownerId     String?   @map("owner_id") @db.Uuid
+  metadata    Json      @default("{}") @db.JsonB
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  company  Company?  @relation(fields: [companyId], references: [id])
+  contact  Contact?  @relation(fields: [contactId], references: [id])
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+  notes    Note[]
+
+  @@index([tenantId])
+  @@index([stage])
+  @@index([companyId])
+  @@map("opportunities")
+}
+
+model Note {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenantId      String?   @map("tenant_id") @db.Uuid
+  body          String
+  contactId     String?   @map("contact_id") @db.Uuid
+  companyId     String?   @map("company_id") @db.Uuid
+  opportunityId String?   @map("opportunity_id") @db.Uuid
+  authorId      String?   @map("author_id") @db.Uuid
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  contact     Contact?     @relation(fields: [contactId], references: [id])
+  company     Company?     @relation(fields: [companyId], references: [id])
+  opportunity Opportunity? @relation(fields: [opportunityId], references: [id])
+
+  @@index([contactId])
+  @@index([companyId])
+  @@index([opportunityId])
+  @@map("notes")
+}
+
+model ApiKey {
+  id         String    @id @default(uuid()) @db.Uuid
+  tenantId   String?   @map("tenant_id") @db.Uuid
+  name       String
+  keyHash    String    @unique @map("key_hash")
+  keyPrefix  String    @map("key_prefix")
+  scopes     String[]
+  lastUsedAt DateTime? @map("last_used_at")
+  expiresAt  DateTime? @map("expires_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  revokedAt  DateTime? @map("revoked_at")
+
+  @@index([keyPrefix])
+  @@index([tenantId])
+  @@map("api_keys")
+}
+
+model WebhookEvent {
+  id              String        @id @default(uuid()) @db.Uuid
+  tenantId        String?       @map("tenant_id") @db.Uuid
+  provider        String
+  providerEventId String        @map("provider_event_id")
+  receivedAt      DateTime      @default(now()) @map("received_at")
+  processedAt     DateTime?     @map("processed_at")
+  status          WebhookStatus @default(RECEIVED)
+  payload         Json          @db.JsonB
+  error           String?
+
+  @@unique([provider, providerEventId])
+  @@index([provider, status])
+  @@index([receivedAt])
+  @@map("webhook_events")
+}
+
+enum WebhookStatus {
+  RECEIVED
+  PROCESSING
+  PROCESSED
+  FAILED
+  SKIPPED
+}
+
+// ─── PHASE 2 MODELS (defined now; migration runs in Phase 2) ─────────────────
+
+model ResearchJob {
+  id               String            @id @default(uuid()) @db.Uuid
+  tenantId         String?           @map("tenant_id") @db.Uuid
+  type             ResearchJobType
+  status           ResearchJobStatus @default(PENDING)
+  targetUrl        String?           @map("target_url")
+  targetEntityType String?           @map("target_entity_type")
+  targetEntityId   String?           @map("target_entity_id") @db.Uuid
+  workerJobId      String?           @map("worker_job_id")
+  startedAt        DateTime?         @map("started_at")
+  completedAt      DateTime?         @map("completed_at")
+  errorMessage     String?           @map("error_message")
+  metadata         Json              @default("{}") @db.JsonB
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  sources ResearchSource[]
+  lineage DataLineage[]
+
+  @@index([tenantId, status])
+  @@index([targetEntityType, targetEntityId])
+  @@map("research_jobs")
+}
+
+enum ResearchJobType {
+  WEBSITE_SCRAPE
+  LINKEDIN_SCRAPE
+  APOLLO_LOOKUP
+  FIRECRAWL_SCRAPE
+  LLM_ENRICH
+  MANUAL_IMPORT
+}
+
+enum ResearchJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model ResearchSource {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String?  @map("tenant_id") @db.Uuid
+  jobId         String   @map("job_id") @db.Uuid
+  url           String
+  sourceType    String   @map("source_type")
+  fetchedAt     DateTime @default(now()) @map("fetched_at")
+  httpStatus    Int?     @map("http_status")
+  contentKey    String?  @map("content_key")
+  contentBucket String?  @map("content_bucket")
+  contentHash   String?  @map("content_hash")
+  byteSize      Int?     @map("byte_size")
+  metadata      Json     @default("{}") @db.JsonB
+
+  job     ResearchJob   @relation(fields: [jobId], references: [id])
+  lineage DataLineage[]
+
+  @@index([jobId])
+  @@index([url, fetchedAt])
+  @@map("research_sources")
+}
+
+model DataLineage {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String?  @map("tenant_id") @db.Uuid
+  entityType     String   @map("entity_type")
+  entityId       String   @map("entity_id") @db.Uuid
+  fieldName      String   @map("field_name")
+  valueSnapshot  String   @map("value_snapshot")
+  sourceId       String?  @map("source_id") @db.Uuid
+  jobId          String?  @map("job_id") @db.Uuid
+  modelUsed      String?  @map("model_used")
+  modelVersion   String?  @map("model_version")
+  promptHash     String?  @map("prompt_hash")
+  outputKey      String?  @map("output_key")
+  confidenceScore Float?  @map("confidence_score")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  source ResearchSource? @relation(fields: [sourceId], references: [id])
+  job    ResearchJob?    @relation(fields: [jobId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([fieldName])
+  @@index([sourceId])
+  @@map("data_lineage")
+}
+
+model EntityRelationship {
+  id               String    @id @default(uuid()) @db.Uuid
+  tenantId         String?   @map("tenant_id") @db.Uuid
+  fromEntityType   String    @map("from_entity_type")
+  fromEntityId     String    @map("from_entity_id") @db.Uuid
+  toEntityType     String    @map("to_entity_type")
+  toEntityId       String    @map("to_entity_id") @db.Uuid
+  relationshipType String    @map("relationship_type")
+  confidence       Float?
+  metadata         Json      @default("{}") @db.JsonB
+  evidenceSourceId String?   @map("evidence_source_id") @db.Uuid
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+
+  @@index([fromEntityType, fromEntityId])
+  @@index([toEntityType, toEntityId])
+  @@index([relationshipType])
+  @@index([tenantId])
+  @@map("entity_relationships")
+}
+
+model Document {
+  id               String    @id @default(uuid()) @db.Uuid
+  tenantId         String?   @map("tenant_id") @db.Uuid
+  title            String?
+  storageBucket    String    @map("storage_bucket")
+  storageKey       String    @map("storage_key")
+  contentType      String    @map("content_type")
+  byteSize         Int       @map("byte_size")
+  tokenCount       Int?      @map("token_count")
+  summaryKey       String?   @map("summary_key")
+  contentHash      String?   @map("content_hash")
+  linkedEntityType String?   @map("linked_entity_type")
+  linkedEntityId   String?   @map("linked_entity_id") @db.Uuid
+  metadata         Json      @default("{}") @db.JsonB
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@unique([storageBucket, storageKey])
+  @@index([linkedEntityType, linkedEntityId])
+  @@index([tenantId])
+  @@map("documents")
+}
