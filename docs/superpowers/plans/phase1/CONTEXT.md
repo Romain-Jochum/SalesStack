@@ -5,15 +5,15 @@ Project-wide conventions that every task assumes.
 ## Tech stack (pinned versions)
 
 - Node.js 24 LTS, npm 10+
-- Fastify 5.2.1, TypeScript 5.5.4
-- Prisma 7.1.0 (PostgreSQL)
+- Fastify 5.8.4, TypeScript 5.9.3
+- Prisma 7.6.0 (PostgreSQL)
 - pgvector/pgvector:pg18 (PostgreSQL 18 + vector extension)
-- Redis 7-alpine, ioredis 5.4.1, BullMQ 5.71.0
-- @sinclair/typebox 0.34.13
-- pino 9.4.0
-- prom-client 15.1.3, @sentry/node 8.31.0
-- Jest 29.7.0, ts-jest 29.1.5, testcontainers 10.11.2
-- ESLint 8.57.1, Prettier 3.3.3, husky 8.1.0, lint-staged 15.2.7
+- Redis 7-alpine, ioredis 5.10.1, BullMQ 5.73.0
+- @sinclair/typebox 0.34.49
+- pino 10.3.1
+- prom-client 15.1.3, @sentry/node 10.47.0
+- Jest 29.7.0, ts-jest 29.4.9, testcontainers 11.13.0
+- ESLint 8.57.1, Prettier 3.8.1, husky 9.1.7, lint-staged 16.4.0
 
 ## Architecture conventions
 
@@ -21,7 +21,7 @@ Project-wide conventions that every task assumes.
 - Core infrastructure: `backend/src/core/{db.ts,redis.ts,logger.ts,metrics.ts,queues.ts,config.ts}`
 - Middleware: `backend/src/core/middleware/{auth.ts,error-handler.ts,rate-limit.ts}`
 - Workers: `backend/src/workers/index.ts` + module-specific workers
-- Tests: `tests/unit/[module]/`
+- Tests: `backend/tests/unit/[module]/`
 - Single Docker image, two roles via `ROLE` env var (api or worker)
 
 ## Error handling contract
