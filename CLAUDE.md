@@ -1,72 +1,18 @@
 # Sales Engine
 
-Automated sales outreach backend for appointment-heavy SMBs. Fastify/TypeScript
-API with BullMQ workers, PostgreSQL, and Redis. Designed to be orchestrated by
-n8n workflows. Twenty CRM, Mautic, and WAHA integrate in Phase 2/3.
-
-## Project Structure
-
-```
-sales-engine/
-├── backend/
-│   ├── src/
-│   │   ├── core/              # Singletons: db, redis, logger, metrics, config, queues
-│   │   │   └── middleware/    # auth, error-handler, rate-limit
-│   │   ├── modules/           # Vertical slices (each is a Fastify plugin)
-│   │   │   ├── health/        # routes.ts
-│   │   │   ├── contacts/      # schemas.ts, service.ts, routes.ts
-│   │   │   ├── companies/     # schemas.ts, service.ts, routes.ts
-│   │   │   ├── segments/      # schemas.ts, service.ts, routes.ts, segment.worker.ts
-│   │   │   ├── campaigns/     # schemas.ts, service.ts, routes.ts
-│   │   │   ├── engagements/   # schemas.ts, service.ts, routes.ts
-│   │   │   ├── webhooks/      # schemas.ts, service.ts, routes.ts, webhook.worker.ts
-│   │   │   ├── opportunities/ # schemas.ts, service.ts, routes.ts
-│   │   │   └── jobs/          # schemas.ts, routes.ts (pointer pattern)
-│   │   ├── server.ts          # Fastify app: buildApp(), start()
-│   │   └── workers/
-│   │       └── index.ts       # BullMQ worker entrypoint
-│   ├── prisma/
-│   │   └── schema.prisma
-│   ├── tests/
-│   │   └── unit/
-│   ├── Dockerfile             # Multi-stage, ROLE-based entrypoint
-│   ├── docker-entrypoint.sh
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── jest.config.ts
-├── docs/superpowers/          # Plans, specs, architectural decisions
-├── .claude/skills/            # task-implementation-standard, docker
-└── .tmp/                      # Scratch files (gitignored)
-```
+Automated sales outreach backend for SMBs. Fastify/TypeScript API with BullMQ
+workers, PostgreSQL, Redis — orchestrated by n8n workflows.
 
 ## Tech Stack
 
 - **Runtime:** Node.js 24 LTS, npm 10+
 - **Backend:** Fastify 5.8.4, TypeScript 5.9.3
-- **ORM:** Prisma 7.6.0 (PostgreSQL)
-- **Database:** pgvector/pgvector:pg18 (PostgreSQL 18 + vector extension)
-- **Cache/Queue:** Redis 7-alpine, ioredis 5.10.1, BullMQ 5.73.0
+- **ORM:** Prisma 7.6.0 (PostgreSQL 18 + pgvector)
+- **Queue:** BullMQ 5.73.0, ioredis 5.10.1, Redis 7-alpine
 - **Validation:** @sinclair/typebox 0.34.49
 - **Logging:** pino 10.3.1
-- **Monitoring:** prom-client 15.1.3, @sentry/node 10.47.0
 - **Testing:** Jest 29.7.0, ts-jest 29.4.9, testcontainers 11.13.0
-- **Linting:** ESLint 8.57.1, Prettier 3.8.1, husky 9.1.7, lint-staged 16.4.0
-
-## Port Allocation (bind to 127.0.0.1 only)
-
-| Port | Service | Internal | Phase |
-|------|---------|----------|-------|
-| 2350-2358 | Reserved | — | Phase 2/3 (Twenty, Mautic, WAHA, n8n) |
-| 2359 | Sales Engine API | 3000 | 1 |
-| 2360 | Sales Engine PostgreSQL | 5432 | 1 |
-| 2361 | Sales Engine Redis | 6379 | 1 |
-| 2362 | MinIO API | 9000 | 2 |
-| 2363 | MinIO Console | 9001 | 2 |
-| 2365 | Prometheus | 9090 | 1 |
-| 2366 | Grafana | 3000 | 2 |
-| 2367 | Loki | 3100 | 2 |
-| 2368 | Metabase | 3000 | 2 |
-| 2369-2399 | Reserved | — | Future |
+- **Linting:** ESLint 8.57.1, Prettier 3.8.1, husky 9.1.7
 
 ## Commands
 
@@ -103,98 +49,110 @@ docker compose logs -f sales-api                     # Tail API logs
 docker compose exec sales-db psql -U salesengine -d salesengine
 ```
 
-## Git & PR Practices
+## Project Structure
 
-### Commit Conventions
-- **Conventional Commits** required:
-  `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`
-- **50/72 rule:** subject under 50 chars, body wraps at 72
-- **Imperative mood:** "Add feature" not "Added feature"
-- **Atomic commits:** one logical change per commit
+```
+sales-engine/
+├── backend/
+│   ├── src/
+│   │   ├── core/              # Singletons: db, redis, logger, metrics, config, queues
+│   │   │   └── middleware/    # auth, error-handler, rate-limit
+│   │   ├── modules/           # Vertical slices (each is a Fastify plugin)
+│   │   │   ├── health/        # routes.ts
+│   │   │   ├── contacts/      # schemas.ts, service.ts, routes.ts
+│   │   │   ├── companies/     # schemas.ts, service.ts, routes.ts
+│   │   │   ├── segments/      # schemas.ts, service.ts, routes.ts, segment.worker.ts
+│   │   │   ├── campaigns/     # schemas.ts, service.ts, routes.ts
+│   │   │   ├── engagements/   # schemas.ts, service.ts, routes.ts
+│   │   │   ├── webhooks/      # schemas.ts, service.ts, routes.ts, webhook.worker.ts
+│   │   │   ├── opportunities/ # schemas.ts, service.ts, routes.ts
+│   │   │   └── jobs/          # schemas.ts, routes.ts (pointer pattern)
+│   │   ├── server.ts          # Fastify app: buildApp(), start()
+│   │   └── workers/
+│   │       └── index.ts       # BullMQ worker entrypoint
+│   ├── prisma/
+│   │   └── schema.prisma
+│   ├── tests/
+│   │   └── unit/
+│   ├── Dockerfile             # Multi-stage, ROLE-based entrypoint
+│   ├── docker-entrypoint.sh
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── jest.config.ts
+├── docs/superpowers/          # Plans, specs, architectural decisions
+├── .claude/skills/            # task-implementation-standard, docker
+└── .tmp/                       # Scratch files (gitignored)
+```
 
-### Branching
-- **GitHub Flow:** branch off `main`, merge back to `main`
-- **Branch naming:** `feature/<desc>`, `bugfix/<desc>`, `hotfix/<desc>` (hyphen-separated, lowercase)
+## START
 
-### Pull Requests
-- Small, focused PRs — one task per PR, one branch per task (see
-  task-implementation-standard Phase 0).
-- Branch naming: `<type>/<TASK-ID>-<kebab-slug>` — e.g.
-  `feature/P1-007-contacts-crud-endpoints`.
-- Descriptive summary using the PR template in review-checklist.md.
-- **Rebase and merge** into `main` (not squash). Atomic commits from the
-  feature branch are preserved in history — they are the audit trail for
-  how the task was built and why. Squash-merge is reserved for branches
-  where the intermediate commits are genuinely noise (typo fixes, WIP
-  checkpoints) and is decided case-by-case by the reviewer.
-- Before merge: rebase onto latest `main`, force-push with
-  `--force-with-lease`, confirm CI is green.
+- **ALWAYS** enter plan mode before implementing a feature
+- **ALWAYS** explore and load relevant skills before starting work
+- If a plan task: **ALWAYS** read CONTEXT.md before touching code
+- If no plan: **ALWAYS** explore existing patterns and files before writing anything new
+- If no relevant skill exists, ask whether to search for one
 
-## Key Rules
+## CODE ANALYSIS
 
-- **NEVER** expose ports publicly. Always bind to `127.0.0.1`.
-- All inter-service communication uses Docker service names (e.g., `redis://sales-redis:6379`).
-- Stack must be portable: macOS locally, Linux server with same compose files.
-- Use `docker compose` (v2), not `docker-compose` (v1).
-- Generate secrets with `openssl rand -base64 32` — never use placeholders in production.
-- Exact dependency pinning: no `^` or `~` in package.json.
-- No `console.log` — use Pino logger. ESLint `no-console` enforces this.
-- No `any` — use `unknown` and narrow. No `@ts-ignore` without a justification comment.
+- **ALWAYS** read existing code before modifying anything
+- **ALWAYS** follow established patterns for consistency
+- **NEVER** assume structure — read it first
 
-## Architecture
+## TYPESCRIPT
 
-### Vertical Slices
-Each module is a self-contained Fastify plugin:
-- `schemas.ts` — TypeBox request/response schemas
-- `service.ts` — Business logic (Prisma queries, no HTTP concerns)
-- `routes.ts` — Fastify route handlers
+- **ALWAYS** use strong typing on every interface, function, and return type
+- **NEVER** use `any` — use `unknown` and narrow
+- **NEVER** use `@ts-ignore` without a `// @ts-ignore — [reason]` comment
+- **NEVER** use `console.log` — use the Pino logger
 
-### Pointer Pattern
-Long operations return `202 Accepted` + job ID. Client polls `GET /api/jobs/:jobId`.
-BullMQ jobs carry IDs, never raw payloads.
+## CODE ARCHITECTURE
 
-### Tenant Isolation
-`tenantId` on every model, every query. Unique constraints scoped to tenant.
+- Vertical slice per module: `schemas.ts` → `service.ts` → `routes.ts`
+- Services throw typed errors — **NEVER** catch errors in route handlers, let the error middleware handle it
+- Error response shape: `{ error: { code, message, details? } }` — codes: `VALIDATION_ERROR`, `NOT_FOUND`, `UNAUTHORIZED`, `RATE_LIMITED`, `INTERNAL_ERROR`
+- `tenantId` on every model, every query — unique constraints scoped to tenant
+- Long operations: return `202 + jobId`, client polls `GET /api/jobs/:jobId`
+- Any read-then-write sequence belongs in a `$transaction` — never split across two queries
+- All required env vars validated at startup — process exits immediately if any are missing
+- One Dockerfile, two roles — `ROLE` env var selects API or worker entrypoint
+- **NEVER** expose ports publicly — always bind to `127.0.0.1`
+- **ALWAYS** use `docker compose` (v2), not `docker-compose` (v1)
+- All inter-service traffic uses Docker service names (e.g. `redis://sales-redis:6379`)
+- Exact dependency pinning — no `^` or `~` in package.json
 
-### Error Handling
-Throw typed errors → Fastify error handler catches → consistent JSON response:
-`{ error: { code, message, details? } }`. Codes: `VALIDATION_ERROR`, `NOT_FOUND`,
-`UNAUTHORIZED`, `RATE_LIMITED`, `INTERNAL_ERROR`.
+## SECURITY
 
-### Security
-- Helmet (CORS, CSP, HSTS)
-- Rate limiting: 500 req/min per IP
-- API key auth via SHA-256 hashing
-- HMAC signature validation for webhooks
-- Fail at startup if required env vars missing
+- **NEVER** log secrets, API keys, or PII at any log level
+- **NEVER** process a webhook payload before verifying its HMAC signature
+- **ALWAYS** validate API keys via SHA-256 hash comparison — never store raw keys
+- **ALWAYS** test every endpoint without auth and confirm it returns 401
+- Rate limiting: 500 req/min per IP — requests exceeding the limit return 429
 
-### Graceful Shutdown
-SIGTERM → close app → disconnect DB → close Redis/workers. Wait for in-flight requests.
+## TESTING
 
-### Single Image, Two Roles
-One Dockerfile builds both API and worker. `ROLE` env var selects entrypoint.
+- **ALWAYS** write a failing test before implementation — RED → GREEN → REFACTOR
+- **NEVER** commit code that breaks existing tests
+- Coverage targets (enforced in CI): 80% for business logic, 60% for plumbing
+- **NEVER** mock PostgreSQL or Redis in integration tests — use real containers (testcontainers)
+- **ALWAYS** test at least one unhappy path per endpoint or handler
 
-## Environment Variables
+## GIT
 
-Required:
-- `DATABASE_URL` — PostgreSQL connection string
-- `REDIS_URL` — Redis connection string
+- **NEVER** mention Claude, AI, agent, or co-authored in commits or PRs
+- Commit at each tiny implementation change — one logical change per commit
+- Conventional Commits: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`, `ci:`
+- Subject: max 50 chars, imperative mood, lowercase after prefix, no trailing period
+- **NEVER** use emojis in commits
+- Branch naming: `<type>/<TASK-ID>-<kebab-slug>` e.g. `feature/P1-007-contacts-crud`
+- GitHub Flow: branch off `main`, merge back to `main`
+- **NEVER** bypass pre-commit hooks with `--no-verify`
 
-Optional (with defaults):
-- `PORT` (3000), `HOST` (0.0.0.0), `NODE_ENV` (development), `LOG_LEVEL` (debug)
-- `ROLE` (api|worker), `SALES_API_PORT` (2359), `SALES_DB_PORT` (2360), `SALES_REDIS_PORT` (2361)
-- `SENTRY_DSN`, `CORS_ORIGIN`, webhook secrets, `N8N_BASE_URL`, `N8N_API_KEY`
+## PULL REQUESTS
 
-## Documentation
-
-- **Phase 1 plan:** `docs/superpowers/plans/2026-04-05-sales-engine-phase1-revised.md`
-- **Phase 2/3 architecture:** `docs/superpowers/specs/2026-04-05-phase2-phase3-architecture.md`
-- **Architectural decisions:** `docs/superpowers/decisions/`
-
-## MCP Servers
-
-- **context7:** Active — Fastify v5, Prisma v7, BullMQ v5.71+ docs
-- **waha:** WAHA WhatsApp API (configure WAHA_API_KEY after first run)
-- **n8n:** n8n workflow API via n8n-mcp-server (configure N8N_API_KEY after first run)
-- **n8n-docs:** n8n documentation via n8n-mcp
-- **openapi-bridge:** Generic OpenAPI-to-MCP bridge for any tool's Swagger spec
+- **ALWAYS** keep PRs small — one task per PR, one branch per task
+- Title: `<TASK-ID>: short description`
+- Body: one-line summary → `## Changes` (bullets) → `## Testing` (at least one curl command showing happy path + observed response)
+- **Rebase and merge** into `main` — atomic commits are the audit trail, never squash
+- Before merge: rebase onto latest `main`, force-push with `--force-with-lease`, CI green
+- **NEVER** mention Claude, AI, agent, or co-authored in PR title or body
+- **NEVER** over-explain — no walls of text, no checkbox checklists
