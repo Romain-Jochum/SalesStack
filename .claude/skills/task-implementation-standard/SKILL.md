@@ -212,7 +212,7 @@ Before requesting review, update plan state **on the feature branch** as the fin
 3. Commit these changes as a single isolated commit:
 
 ```
-chore(<TASK-ID>/plan): mark task <TASK-ID> ready for review
+chore: mark task <TASK-ID> ready for review
 Refs: <TASK-ID>
 ```
 
