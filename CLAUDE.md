@@ -185,5 +185,7 @@ Optional (with defaults):
 ## MCP Servers
 
 - **context7:** Active — Fastify v5, Prisma v7, BullMQ v5.71+ docs
-- **n8n:** Active for Phase 1 smoke tests (docs + live testing)
-- **twenty-crm, mautic, waha:** Deactivated until Phase 2/3
+- **waha:** WAHA WhatsApp API (configure WAHA_API_KEY after first run)
+- **n8n:** n8n workflow API via n8n-mcp-server (configure N8N_API_KEY after first run)
+- **n8n-docs:** n8n documentation via n8n-mcp
+- **openapi-bridge:** Generic OpenAPI-to-MCP bridge for any tool's Swagger spec
