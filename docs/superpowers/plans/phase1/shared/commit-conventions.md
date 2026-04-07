@@ -1,3 +1,5 @@
+> **Source of truth:** `CLAUDE.md → ## GIT`. This file is a detailed reference only — if anything conflicts, CLAUDE.md wins.
+
 # Commit Conventions
 
 > All commits in this project follow Conventional Commits with strict formatting
