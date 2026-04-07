@@ -4,7 +4,7 @@ Status legend: ⚪ not-started · 🔄 in-progress · ✅ complete · ⏸ blocke
 
 | Task | Title | Status | Depends on | Commits | Log |
 |------|-------|--------|------------|---------|-----|
-| 00 | Pre-Implementation Setup | ⚪ not-started | — | — | [log](tasks/task-00-pre-setup.LOG.md) |
+| 00 | Pre-Implementation Setup | ✅ complete | — | b806f11 | [log](tasks/task-00-pre-setup.LOG.md) |
 | 01 | Project Scaffolding | ⚪ not-started | 00 | — | [log](tasks/task-01-scaffolding.LOG.md) |
 | 02 | Prisma Schema | ⚪ not-started | 01 | — | [log](tasks/task-02-prisma-schema.LOG.md) |
 | 02.5 | Launch Database & Redis | ⚪ not-started | 02 | — | [log](tasks/task-02.5-launch-db.LOG.md) |

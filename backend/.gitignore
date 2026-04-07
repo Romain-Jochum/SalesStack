@@ -34,4 +34,6 @@ npm-debug.log*
 yarn-debug.log*
 
 # Prisma
-prisma/migrations/
+# Note: prisma/migrations/ is NOT ignored — migrations must be committed
+# for deterministic deployments. Only the generated client is excluded.
+prisma/generated/
