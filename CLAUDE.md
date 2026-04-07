@@ -82,7 +82,7 @@ sales-engine/
 │   └── jest.config.ts
 ├── docs/superpowers/          # Plans, specs, architectural decisions
 ├── .claude/skills/            # task-implementation-standard, docker
-└── .tmp/                       # Scratch files (gitignored)
+└── .tmp/                      # Scratch files (gitignored)
 ```
 
 ## START
@@ -120,7 +120,7 @@ sales-engine/
 - **ALWAYS** use `docker compose` (v2), not `docker-compose` (v1)
 - All inter-service traffic uses Docker service names (e.g. `redis://sales-redis:6379`)
 - Exact dependency pinning — no `^` or `~` in package.json
-- SIGTERM handler: drain in-flight requests, then close DB, then close Redis/workers in order
+- **ALWAYS** implement SIGTERM shutdown in order: drain in-flight requests → close DB → close Redis/workers
 
 ## SECURITY
 
