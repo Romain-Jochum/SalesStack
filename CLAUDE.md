@@ -131,6 +131,14 @@ sales-engine/
 - Rate limiting: 500 req/min per IP — requests exceeding the limit return 429
 - Generate secrets with `openssl rand -base64 32` — never use placeholders in production
 
+## EXTERNAL APIS
+
+- Self-hosted services have no per-call cost — but avoid unnecessary calls, they still have side effects
+- **NEVER** call a third-party API in a retry loop — always cap retries and use exponential backoff
+- **NEVER** hammer rate-limited APIs — use the minimum calls needed, one at a time during development
+- Metered pay-per-use APIs (scraping, enrichment) are expensive — **ALWAYS** ask before any operation that makes more than a few calls, prefer sandboxes or cached responses during development
+- **NEVER** implement a paid API integration without instrumentation to monitor usage and cost
+
 ## TESTING
 
 - **ALWAYS** write a failing test before implementation — RED → GREEN → REFACTOR
