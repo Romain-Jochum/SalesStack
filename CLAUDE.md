@@ -42,15 +42,15 @@ sales-engine/
 ## Tech Stack
 
 - **Runtime:** Node.js 24 LTS, npm 10+
-- **Backend:** Fastify 5.2.1, TypeScript 5.5.4
-- **ORM:** Prisma 7.1.0 (PostgreSQL)
+- **Backend:** Fastify 5.8.4, TypeScript 5.9.3
+- **ORM:** Prisma 7.6.0 (PostgreSQL)
 - **Database:** pgvector/pgvector:pg18 (PostgreSQL 18 + vector extension)
-- **Cache/Queue:** Redis 7-alpine, ioredis 5.4.1, BullMQ 5.71.0
-- **Validation:** @sinclair/typebox 0.34.13
-- **Logging:** pino 9.4.0
-- **Monitoring:** prom-client 15.1.3, @sentry/node 8.31.0
-- **Testing:** Jest 29.7.0, ts-jest 29.1.5, testcontainers 10.11.2
-- **Linting:** ESLint 8.57.1, Prettier 3.3.3, husky 8.1.0, lint-staged 15.2.7
+- **Cache/Queue:** Redis 7-alpine, ioredis 5.10.1, BullMQ 5.73.0
+- **Validation:** @sinclair/typebox 0.34.49
+- **Logging:** pino 10.3.1
+- **Monitoring:** prom-client 15.1.3, @sentry/node 10.47.0
+- **Testing:** Jest 29.7.0, ts-jest 29.4.9, testcontainers 11.13.0
+- **Linting:** ESLint 8.57.1, Prettier 3.8.1, husky 9.1.7, lint-staged 16.4.0
 
 ## Port Allocation (bind to 127.0.0.1 only)
 
@@ -117,9 +117,18 @@ docker compose exec sales-db psql -U salesengine -d salesengine
 - **Branch naming:** `feature/<desc>`, `bugfix/<desc>`, `hotfix/<desc>` (hyphen-separated, lowercase)
 
 ### Pull Requests
-- Small, focused PRs — break large features into chunks
-- Descriptive summary: what, why, and how to test
-- Squash and merge into `main`
+- Small, focused PRs — one task per PR, one branch per task (see
+  task-implementation-standard Phase 0).
+- Branch naming: `<type>/<TASK-ID>-<kebab-slug>` — e.g.
+  `feature/P1-007-contacts-crud-endpoints`.
+- Descriptive summary using the PR template in review-checklist.md.
+- **Rebase and merge** into `main` (not squash). Atomic commits from the
+  feature branch are preserved in history — they are the audit trail for
+  how the task was built and why. Squash-merge is reserved for branches
+  where the intermediate commits are genuinely noise (typo fixes, WIP
+  checkpoints) and is decided case-by-case by the reviewer.
+- Before merge: rebase onto latest `main`, force-push with
+  `--force-with-lease`, confirm CI is green.
 
 ## Key Rules
 
